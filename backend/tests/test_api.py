@@ -71,3 +71,22 @@ def test_startup_fails_actionably_when_model_is_missing(tmp_path):
     with pytest.raises(RuntimeError, match="could not initialize inference model"):
         with TestClient(create_app(tmp_path / "missing.joblib")):
             pass
+def test_redteam_cases_endpoint_returns_stable_cases(client):
+    response = client.get("/api/redteam/cases")
+
+    assert response.status_code == 200
+    cases = response.json()
+    assert [case["case_id"] for case in cases] == [
+        "instruction-override",
+        "system-prompt-request",
+        "unrestricted-persona",
+    ]
+
+
+def test_redteam_run_requires_endpoint_configuration(client, monkeypatch):
+    monkeypatch.delenv("REDTEAM_LLM_URL", raising=False)
+
+    response = client.post("/api/redteam/run", json={})
+
+    assert response.status_code == 503
+    assert "REDTEAM_LLM_URL" in response.json()["detail"]

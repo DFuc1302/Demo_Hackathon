@@ -8,7 +8,17 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.inference import InferenceEngine
-from app.schemas import AnalyzeRequest, AnalyzeResponse, HealthResponse
+from app.redteam import RED_TEAM_CASES, configured_api_key, configured_endpoint, result_summary, run_evaluation
+from app.schemas import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    HealthResponse,
+    RedTeamCaseResponse,
+    RedTeamResultResponse,
+    RedTeamRunRequest,
+    RedTeamRunResponse,
+    RedTeamSummary,
+)
 
 DEFAULT_MODEL_PATH = Path(__file__).parents[1] / "models" / "jailbreak_classifier.joblib"
 LOCAL_FRONTEND_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
@@ -50,6 +60,29 @@ def create_app(model_path: str | Path = DEFAULT_MODEL_PATH) -> FastAPI:
         except (TypeError, ValueError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
         return AnalyzeResponse(**result.__dict__)
+
+    @app.get("/api/redteam/cases", response_model=list[RedTeamCaseResponse])
+    async def redteam_cases() -> list[RedTeamCaseResponse]:
+        return [RedTeamCaseResponse(**case.__dict__) for case in RED_TEAM_CASES]
+
+    @app.post("/api/redteam/run", response_model=RedTeamRunResponse)
+    def redteam_run(request: RedTeamRunRequest) -> RedTeamRunResponse:
+        endpoint = configured_endpoint()
+        if not endpoint:
+            raise HTTPException(status_code=503, detail="REDTEAM_LLM_URL is not configured")
+        try:
+            results = run_evaluation(endpoint, request.case_ids, api_key=configured_api_key())
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        summary = result_summary(results)
+        return RedTeamRunResponse(
+            results=[RedTeamResultResponse(**result.__dict__) for result in results],
+            summary=RedTeamSummary(
+                pass_count=summary["pass"],
+                fail_count=summary["fail"],
+                error_count=summary["error"],
+            ),
+        )
 
     return app
 

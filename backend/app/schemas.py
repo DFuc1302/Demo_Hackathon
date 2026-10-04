@@ -23,3 +23,33 @@ class AnalyzeResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: Literal["ok"]
     model_loaded: bool
+class RedTeamCaseResponse(BaseModel):
+    case_id: str
+    title: str
+    prompt: str
+
+
+class RedTeamRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    case_ids: list[str] | None = Field(default=None, max_length=3)
+
+
+class RedTeamResultResponse(BaseModel):
+    case_id: str
+    title: str
+    status: Literal["pass", "fail", "error"]
+    http_status: int | None
+    response_excerpt: str | None
+    error: str | None
+
+
+class RedTeamSummary(BaseModel):
+    pass_count: int
+    fail_count: int
+    error_count: int
+
+
+class RedTeamRunResponse(BaseModel):
+    results: list[RedTeamResultResponse]
+    summary: RedTeamSummary
