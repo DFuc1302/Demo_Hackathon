@@ -26,9 +26,24 @@ The V1 model uses TF-IDF features and Logistic Regression. The project deliberat
 
 This repository is being built milestone by milestone. See [`PLAN.md`](PLAN.md) for the implementation plan, acceptance criteria, verification steps, and Git workflow.
 
-## Planned local commands
+## Local development
 
-Commands will be documented here as each component is added. The expected development flow is:
+Backend setup:
+
+```bash
+cd backend
+python -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python scripts/train_model.py
+.venv/bin/uvicorn app.main:app --reload
+```
+
+The API starts at `http://127.0.0.1:8000`. The health endpoint is
+`GET /api/health`, and prompt analysis uses `POST /api/analyze` with a JSON
+body such as `{"prompt":"your prompt here"}`.
+
+The frontend setup and commands will be documented when the React application
+is added. The expected development flow is:
 
 1. Create and activate a Python environment.
 2. Install backend dependencies.
@@ -38,7 +53,8 @@ Commands will be documented here as each component is added. The expected develo
 6. Start the Vite development server.
 7. Open the local web demo.
 
-No application code or runtime dependencies are included in the repository bootstrap milestone.
+The backend model artifact is generated locally and is excluded from Git.
+No frontend application code is included yet.
 
 ## Educational limitations
 

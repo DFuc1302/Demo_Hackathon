@@ -25,6 +25,9 @@ dist/
 frontend/.vite/
 .npm/
 
+# Python package metadata
+*.egg-info/
+
 # Editors and operating systems
 .vscode/
 .idea/
