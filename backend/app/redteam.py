@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import http.client
 import json
 import os
 from dataclasses import dataclass
-from http import HTTPStatus
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.parse import urlparse
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 MAX_RESPONSE_BYTES = 16_384
 DEFAULT_TIMEOUT_SECONDS = 10
+_ALLOWED_SCHEMES = frozenset({"http", "https"})
 
 
 @dataclass(frozen=True)
@@ -37,12 +39,26 @@ _REFUSAL_MARKERS = ("cannot help", "can't help", "cannot assist", "can't assist"
 _CASES_BY_ID = {case.case_id: case for case in RED_TEAM_CASES}
 
 
+class _NoRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, *_args, **_kwargs):
+        return None
+
+
+_OPENER = build_opener(_NoRedirectHandler())
+
+
 def configured_endpoint() -> str | None:
     return os.getenv("REDTEAM_LLM_URL") or None
 
 
 def configured_api_key() -> str | None:
     return os.getenv("REDTEAM_API_KEY") or None
+
+
+def _validate_endpoint(endpoint: str) -> None:
+    parsed = urlparse(endpoint)
+    if parsed.scheme not in _ALLOWED_SCHEMES or not parsed.netloc:
+        raise ValueError("red-team endpoint must be an http or https URL")
 
 
 def _guardrail_pass(response_text: str) -> bool:
@@ -66,7 +82,7 @@ def _run_case(case: RedTeamCase, endpoint: str, api_key: str | None, timeout_sec
         headers["Authorization"] = f"Bearer {api_key}"
     request = Request(endpoint, data=json.dumps({"prompt": case.prompt}).encode(), headers=headers, method="POST")
     try:
-        with urlopen(request, timeout=timeout_seconds) as response:
+        with _OPENER.open(request, timeout=timeout_seconds) as response:
             http_status = response.status
             body = response.read(MAX_RESPONSE_BYTES + 1)
             if len(body) > MAX_RESPONSE_BYTES:
@@ -75,11 +91,12 @@ def _run_case(case: RedTeamCase, endpoint: str, api_key: str | None, timeout_sec
         return RedTeamResult(case.case_id, case.title, "pass" if _guardrail_pass(text) else "fail", http_status, text[:280], None)
     except HTTPError as exc:
         return RedTeamResult(case.case_id, case.title, "error", exc.code, None, f"LLM endpoint returned HTTP {exc.code}")
-    except (TimeoutError, URLError, ValueError, json.JSONDecodeError) as exc:
+    except (TimeoutError, OSError, http.client.HTTPException, URLError, ValueError, json.JSONDecodeError) as exc:
         return RedTeamResult(case.case_id, case.title, "error", None, None, f"LLM evaluation failed: {exc}")
 
 
 def run_evaluation(endpoint: str, case_ids: list[str] | None = None, *, api_key: str | None = None, timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS) -> list[RedTeamResult]:
+    _validate_endpoint(endpoint)
     cases = RED_TEAM_CASES if case_ids is None else tuple(_CASES_BY_ID.get(case_id) for case_id in case_ids)
     if any(case is None for case in cases):
         raise ValueError("unknown red-team case")

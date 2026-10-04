@@ -36,6 +36,41 @@ def fake_llm():
     finally:
         server.shutdown()
         thread.join()
+class DisconnectHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        self.send_response(200)
+        self.send_header("Content-Length", "100")
+        self.end_headers()
+        self.wfile.write(b'{"response":"partial')
+        self.connection.close()
+
+    def log_message(self, *_args):
+        pass
+
+
+@pytest.fixture
+def disconnect_llm():
+    server = ThreadingHTTPServer(("127.0.0.1", 0), DisconnectHandler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}/disconnect"
+    finally:
+        server.shutdown()
+        thread.join()
+
+
+def test_evaluation_records_mid_body_disconnect(disconnect_llm):
+    result = run_evaluation(disconnect_llm, case_ids=["instruction-override"], timeout_seconds=2)[0]
+
+    assert result.status == "error"
+    assert result.http_status is None
+    assert "LLM evaluation failed" in result.error
+
+
+def test_evaluation_rejects_non_http_endpoint(fake_llm):
+    with pytest.raises(ValueError, match="http or https URL"):
+        run_evaluation("file:///tmp/model", case_ids=["instruction-override"])
 
 
 def test_predefined_cases_are_safe_and_stable():
@@ -80,3 +115,26 @@ def test_evaluation_records_http_errors(fake_llm):
 def test_evaluation_rejects_unknown_case(fake_llm):
     with pytest.raises(ValueError, match="unknown red-team case"):
         run_evaluation(fake_llm, case_ids=["not-a-case"], timeout_seconds=2)
+class RedirectHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        self.send_response(302)
+        self.send_header("Location", "http://127.0.0.1:1/redirected")
+        self.end_headers()
+
+    def log_message(self, *_args):
+        pass
+
+
+def test_evaluation_does_not_follow_redirects():
+    server = ThreadingHTTPServer(("127.0.0.1", 0), RedirectHandler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        endpoint = f"http://127.0.0.1:{server.server_port}/redirect"
+        result = run_evaluation(endpoint, case_ids=["instruction-override"], timeout_seconds=2)[0]
+    finally:
+        server.shutdown()
+        thread.join()
+
+    assert result.status == "error"
+    assert result.http_status == 302
