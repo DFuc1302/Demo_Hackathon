@@ -4,12 +4,38 @@
 
 Show how a small, explainable classifier can flag jailbreak-style language and how predefined guardrail tests can be evaluated safely. Present the output as an educational signal, not a security guarantee.
 
-## Start the demo
+## Start the demo in WSL
 
-1. Start the backend and train the local model using the commands in the root README.
-2. Start the frontend in a second terminal.
-3. Optionally configure `REDTEAM_LLM_URL` and `REDTEAM_API_KEY` before starting the backend.
-4. Open `http://localhost:5173`.
+Keep the Python virtual environment on the Linux filesystem. From the repository root:
+
+```bash
+python3 -m venv "$HOME/.venvs/demo-hackathon"
+"$HOME/.venvs/demo-hackathon/bin/python" -m pip install -e backend[dev]
+"$HOME/.venvs/demo-hackathon/bin/python" backend/scripts/train_model.py
+```
+
+Start the included safe fake endpoint in terminal 1:
+
+```bash
+python3 backend/scripts/fake_llm.py
+```
+
+Start FastAPI in terminal 2:
+
+```bash
+export REDTEAM_LLM_URL=http://127.0.0.1:9000/generate
+"$HOME/.venvs/demo-hackathon/bin/uvicorn" --app-dir backend app.main:app --reload
+```
+
+Start Vite in terminal 3:
+
+```bash
+cd frontend
+npm install
+npm run dev -- --host 0.0.0.0
+```
+
+Open `http://localhost:5173`.
 
 ## Presentation path
 
@@ -17,8 +43,8 @@ Show how a small, explainable classifier can flag jailbreak-style language and h
 2. Select **Analyze prompt**. Point out the label, probability, risk band, and empty signal state.
 3. Use **Load example**. The example asks to ignore previous instructions and reveal a hidden system prompt.
 4. Select **Analyze prompt** again. Point out the jailbreak label and detected signals.
-5. Scroll to **Red-team dashboard**. Review the stable case IDs and run the evaluation against the configured educational endpoint.
-6. Explain pass, fail, and error counts. An unconfigured endpoint intentionally produces a clear configuration error.
+5. Scroll to **Red-team dashboard**. Select **Run evaluation**.
+6. The included fake endpoint refuses every case, so the summary should show **Pass: 3**.
 
 ## API smoke checks
 
@@ -34,3 +60,4 @@ curl -X POST http://127.0.0.1:8000/api/analyze -H 'Content-Type: application/jso
 - Signals are deterministic regular-expression explanations, not proof of intent.
 - Red-team evaluation depends on the configured endpoint's response format and refusal wording.
 - The UI requires the backend to be running and does not persist results.
+- Backend environment variables are exported in the shell; the app does not load `.env` automatically.

@@ -19,21 +19,27 @@ The V1 detector uses TF-IDF features and Logistic Regression. It is a demo signa
 - `PLAN.md` — milestone scope, acceptance criteria, and Git workflow.
 - `docs/demo-guide.md` — presentation and evaluation walkthrough.
 
-## Backend setup
+## Backend setup in WSL
 
-Requires Python 3.11+. From the repository root:
+Requires Python 3.11+. Keep the virtual environment on the Linux filesystem. Creating a venv directly under `/mnt/d` can fail because the Windows-mounted filesystem does not support the symlinks used by Python venv.
+
+From the repository root:
 
 ```bash
-cd backend
-python -m venv .venv
-.venv/bin/python -m pip install -e '.[dev]'
-.venv/bin/python scripts/train_model.py
-.venv/bin/uvicorn app.main:app --reload
+python3 -m venv "$HOME/.venvs/demo-hackathon"
+"$HOME/.venvs/demo-hackathon/bin/python" -m pip install -e backend[dev]
+"$HOME/.venvs/demo-hackathon/bin/python" backend/scripts/train_model.py
+"$HOME/.venvs/demo-hackathon/bin/uvicorn" --app-dir backend app.main:app --reload
 ```
 
-On Windows PowerShell, use `.venv\Scripts\python.exe` and `.venv\Scripts\uvicorn.exe` instead of the POSIX paths.
+The API runs at `http://127.0.0.1:8000`. If `python` is not found in WSL, use `python3`; Ubuntu does not always provide a `python` alias by default.
 
-The API runs at `http://127.0.0.1:8000`.
+To reuse the environment in later terminals:
+
+```bash
+export DEMO_VENV="$HOME/.venvs/demo-hackathon"
+"$DEMO_VENV/bin/python" -m pytest -q backend
+```
 
 ## Frontend setup
 
@@ -45,18 +51,29 @@ npm install
 npm run dev -- --host 0.0.0.0
 ```
 
-The Vite server normally runs at `http://localhost:5173`. Set `VITE_API_BASE_URL` when the backend uses another URL; the default is `http://127.0.0.1:8000`.
+Open `http://localhost:5173`. The default backend URL is `http://127.0.0.1:8000`; set `VITE_API_BASE_URL` if it differs.
 
-## Red-team endpoint configuration
+## Run the included fake red-team endpoint
 
-The red-team dashboard is disabled until an endpoint is configured. The backend reads:
+The repository includes a safe local endpoint so the dashboard works without an external LLM. Use three terminals.
+
+Terminal 1:
+
+```bash
+python3 backend/scripts/fake_llm.py
+```
+
+Terminal 2, before starting FastAPI:
 
 ```bash
 export REDTEAM_LLM_URL=http://127.0.0.1:9000/generate
 export REDTEAM_API_KEY=
+"$HOME/.venvs/demo-hackathon/bin/uvicorn" --app-dir backend app.main:app --reload
 ```
 
-Use a local fake endpoint for deterministic demos. Never commit API keys or put them in frontend variables. The harness sends JSON containing `prompt`, enforces a timeout, limits response size to 16 KiB, stores only a bounded response excerpt, and reports `pass`, `fail`, or `error`.
+Terminal 3: start the frontend and open the dashboard. The fake endpoint returns a refusal, so the three predefined cases should report `Pass: 3`.
+
+The backend does not automatically load `.env` files. Export variables in the shell, or run commands with inline variables. Never commit API keys.
 
 ## API
 
@@ -68,10 +85,8 @@ Use a local fake endpoint for deterministic demos. Never commit API keys or put 
 ## Verification commands
 
 ```bash
-cd backend
-.venv/bin/python -m pytest -q
-
-cd ../frontend
+"$HOME/.venvs/demo-hackathon/bin/python" -m pytest -q backend
+cd frontend
 npm run build
 npm audit --omit=dev --audit-level=high
 ```
