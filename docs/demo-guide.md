@@ -14,28 +14,28 @@ python3 -m venv "$HOME/.venvs/demo-hackathon"
 "$HOME/.venvs/demo-hackathon/bin/python" backend/scripts/train_model.py
 ```
 
-Start the included safe fake endpoint in terminal 1:
+Start the included safe fake endpoint in WSL terminal 1:
 
 ```bash
 python3 backend/scripts/fake_llm.py
 ```
 
-Start FastAPI in terminal 2:
+Start FastAPI in WSL terminal 2:
 
 ```bash
 export REDTEAM_LLM_URL=http://127.0.0.1:9000/generate
 "$HOME/.venvs/demo-hackathon/bin/uvicorn" --app-dir backend app.main:app --reload
 ```
 
-Start Vite in terminal 3:
+The current WSL environment does not have a Linux Node.js binary. Start Vite from **Windows PowerShell** in terminal 3:
 
-```bash
-cd frontend
+```powershell
+cd D:/Demo_Hackathon/frontend
 npm install
 npm run dev -- --host 0.0.0.0
 ```
 
-Open `http://localhost:5173`.
+Open `http://localhost:5173`. Alternatively, install native Linux Node.js in WSL before running npm there.
 
 ## Presentation path
 

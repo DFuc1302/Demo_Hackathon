@@ -43,15 +43,15 @@ export DEMO_VENV="$HOME/.venvs/demo-hackathon"
 
 ## Frontend setup
 
-Requires Node.js and npm. In a second terminal:
+The current WSL environment does not have a Linux node binary; its npm command points to the Windows installation and is not reliable from Bash. Run the frontend from **Windows PowerShell** instead:
 
-```bash
-cd frontend
+```powershell
+cd D:/Demo_Hackathon/frontend
 npm install
 npm run dev -- --host 0.0.0.0
 ```
 
-Open `http://localhost:5173`. The default backend URL is `http://127.0.0.1:8000`; set `VITE_API_BASE_URL` if it differs.
+Open `http://localhost:5173`. The default backend URL is `http://127.0.0.1:8000`; set `VITE_API_BASE_URL` if it differs. Alternatively, install a native Linux Node.js version in WSL before using npm there.
 
 ## Run the included fake red-team endpoint
 
