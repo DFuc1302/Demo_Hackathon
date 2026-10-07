@@ -27,6 +27,7 @@ from app.schemas import (
     MultilingualModelInfoResponse,
     TranslatedAssessment,
 )
+from app.pipeline.demo import pipeline_router
 
 DEFAULT_MODEL_PATH = Path(__file__).parents[1] / "models" / "jailbreak_transformer"
 DEFAULT_MULTILINGUAL_MODEL_PATH = Path(__file__).parents[1] / "models" / "multilingual_jailbreak_transformer"
@@ -186,6 +187,7 @@ def create_app(
         return response
 
     app.add_middleware(CORSMiddleware, allow_origins=LOCAL_FRONTEND_ORIGINS, allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
+    app.include_router(pipeline_router, prefix="/api/pipeline")
 
     @app.get("/api/health", response_model=HealthResponse)
     async def health(request: Request) -> HealthResponse:

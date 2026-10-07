@@ -23,6 +23,10 @@ backend/models/*
 # Generated V2 and multilingual dataset splits
 backend/data/v2/*.jsonl
 backend/data/multilingual/*.jsonl
+
+# Generated pipeline run outputs and submissions
+backend/outputs/
+backend/submissions/
 # Node
 node_modules/
 dist/

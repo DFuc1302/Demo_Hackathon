@@ -295,7 +295,10 @@ export default function App() {
     <main className="min-h-screen bg-paper text-ink">
       <div className="mx-auto max-w-6xl px-5 py-6 sm:px-8 sm:py-10">
         <header className="flex items-center justify-between border-b border-ink/15 pb-5">
-          <a className="font-display text-xl font-bold tracking-tight" href="/">Prompt Sentinel</a>
+          <div className="flex items-center gap-3">
+            <a className="font-display text-xl font-bold tracking-tight" href="/">Prompt Sentinel</a>
+            <span className="text-sm font-semibold text-slate-500">· AI Security &amp; Guardrail Platform</span>
+          </div>
           <span className="rounded-full border border-ink/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
             V2 + Multilingual detector
           </span>

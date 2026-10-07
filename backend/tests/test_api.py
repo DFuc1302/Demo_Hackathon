@@ -58,3 +58,12 @@ def test_redteam_contract_remains(client, monkeypatch):
     assert len(case_ids) >= 3
     response = client.post("/api/redteam/run", json={})
     assert response.status_code == 503
+
+
+def test_pipeline_capabilities_in_main_app(client):
+    response = client.get("/api/pipeline/capabilities")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ready"
+    assert "supported_tasks" in data
+    assert "target_languages" in data
