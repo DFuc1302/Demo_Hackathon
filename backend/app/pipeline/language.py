@@ -30,6 +30,7 @@ _MARKERS_EN = {
     "then", "now", "look", "only", "come", "its", "over", "think", "also",
     "please", "report", "team", "security", "system", "prompt", "test", "help",
     "show", "user", "instructions", "check", "run", "data", "analysis", "text",
+    "must", "policy", "users", "token", "tokens", "access", "before", "after",
 }
 
 _MARKERS_SW = {
