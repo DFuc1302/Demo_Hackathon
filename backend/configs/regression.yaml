@@ -1,0 +1,13 @@
+train_csv: fixtures/regression_train.csv
+predict_csv: fixtures/regression_test.csv
+feature_columns:
+  - x
+id_column: id
+target_column: y
+task_type: regression
+split_strategy: random
+validation_fraction: 0.25
+seed: 42
+metric: rmse
+prediction_column: prediction
+sample_submission: fixtures/regression_sample_submission.csv
