@@ -112,8 +112,8 @@ def _validate_artifact(artifact: object) -> TaskConfig:
         coefficients, intercept = np.asarray(model["coefficients"], dtype=float), np.asarray(model["intercept"], dtype=float)
         if coefficients.shape != (rows, dimension) or intercept.shape != (rows,) or not np.isfinite(coefficients).all() or not np.isfinite(intercept).all():
             raise ValueError("invalid coefficient/intercept shape or values")
-        expected_hash = hashlib.sha256(_json_bytes({"config": config.record(), "preprocessing": preprocessing, "model": model})).hexdigest()
-        if run["model_sha256"] != expected_hash or run["config_sha256"] != hashlib.sha256(_json_bytes(config.record())).hexdigest():
+        expected_hash = hashlib.sha256(_json_bytes({"config": artifact["config"], "preprocessing": preprocessing, "model": model})).hexdigest()
+        if run["model_sha256"] != expected_hash or run["config_sha256"] != hashlib.sha256(_json_bytes(artifact["config"])).hexdigest():
             raise ValueError("artifact model/config hash mismatch")
         training, validation = run["train_indices"], run["validation_indices"]
         all_indices = training + validation
