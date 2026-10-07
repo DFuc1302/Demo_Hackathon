@@ -11,15 +11,41 @@ from sklearn.preprocessing import StandardScaler
 from app.pipeline.config import TaskConfig
 from app.pipeline.data import Dataset, targets
 
-TEXT_OPTIONS = {"token_pattern": r"(?u)\b\w+\b"}
+def _preprocess_texts(texts: list[str], config: TaskConfig) -> list[str]:
+    if not config.language_normalize and not config.strip_zero_width and not config.clean_text:
+        return texts
+    from app.pipeline.language import clean_text as do_clean_text, normalize_unicode
+    out = []
+    for t in texts:
+        cur = t
+        if config.language_normalize:
+            cur = normalize_unicode(cur, form=config.language_normalize, strip_zero_width=config.strip_zero_width)
+        elif config.strip_zero_width:
+            cur = normalize_unicode(cur, form="NFC", strip_zero_width=True)
+        if config.clean_text:
+            cur = do_clean_text(cur, collapse_whitespace=True, strip_zero_width=config.strip_zero_width)
+        out.append(cur)
+    return out
 
+
+def _build_vectorizer(config: TaskConfig, vocabulary: dict | None = None) -> TfidfVectorizer:
+    kwargs: dict[str, object] = {}
+    if config.subword_ngrams:
+        kwargs["analyzer"] = "char_wb"
+        kwargs["ngram_range"] = (3, 5)
+    else:
+        kwargs["token_pattern"] = r"(?u)\b\w+\b"
+    if vocabulary is not None:
+        kwargs["vocabulary"] = vocabulary
+    return TfidfVectorizer(**kwargs)
 
 def fit_baseline(data: Dataset, config: TaskConfig) -> tuple[dict, dict]:
     preprocessing = {"text": None, "numeric": None}
     if config.text_column:
-        vectorizer = TfidfVectorizer(**TEXT_OPTIONS)
+        texts = _preprocess_texts([row[config.text_column] for row in data.rows], config)
+        vectorizer = _build_vectorizer(config)
         try:
-            vectorizer.fit([row[config.text_column] for row in data.rows])
+            vectorizer.fit(texts)
         except ValueError as exc:
             raise ValueError(f"cannot fit text preprocessing: {exc}") from exc
         preprocessing["text"] = {"vocabulary": {k: int(v) for k, v in vectorizer.vocabulary_.items()},
@@ -46,9 +72,10 @@ def transform(data: Dataset, config: TaskConfig, preprocessing: dict):
     parts = []
     if config.text_column:
         text = preprocessing["text"]
-        vectorizer = TfidfVectorizer(vocabulary=text["vocabulary"], **TEXT_OPTIONS)
+        texts = _preprocess_texts([row[config.text_column] for row in data.rows], config)
+        vectorizer = _build_vectorizer(config, vocabulary=text["vocabulary"])
         vectorizer.idf_ = np.asarray(text["idf"], dtype=float)
-        parts.append(vectorizer.transform([row[config.text_column] for row in data.rows]))
+        parts.append(vectorizer.transform(texts))
     if config.feature_columns:
         numeric = preprocessing["numeric"]
         values = np.asarray([[float(row[c]) for c in config.feature_columns] for row in data.rows])

@@ -1,0 +1,25 @@
+id,text,label
+en-01,urgent system security alert vulnerability detected,alert
+en-02,standard daily office summary and notes,normal
+sw-01,taarifa ya dharura ya usalama wa mfumo imeonekana,alert
+sw-02,kazi za kawaida za kila siku na ripoti,normal
+ha-01,gargadin tsaro na gaggawa a cikin na'ura,alert
+ha-02,aikin yau da kullum na ofis da rahoto,normal
+bn-01,জরুরি নিরাপত্তা সতর্কতা সংকেত সনাক্ত করা হয়েছে,alert
+bn-02,নিয়মিত দৈনন্দিন সাধারণ ব্যবহার কার্যক্রম,normal
+en-03,critical attack detected in system network logs,alert
+en-04,routine user document editing and spell check,normal
+sw-03,shambulio kali la usalama limetambuliwa kwenye mtandao,alert
+sw-04,uandishi wa kawaida wa hati na ukaguzi,normal
+ha-03,an gano babban hari na kutse a cikin tsarin sadarwa,alert
+ha-04,gyaran rubutu na yau da kullum da duba aiki,normal
+bn-03,নেটওয়ার্কে বিপজ্জনক সাইবার আক্রমণ সনাক্ত হয়েছে,alert
+bn-04,নথি সম্পাদনা এবং বানান পরীক্ষণের সাধারণ কাজ,normal
+en-05,breach warning access bypass attempted by intruder,alert
+en-06,quarterly financial planning meeting agenda,normal
+sw-05,onyo la kuvunja usalama na kuingia bila idhini,alert
+sw-06,ajenda ya mkutano wa mipango ya fedha,normal
+ha-05,gargadi game da keta tsaro ba tare da izini ba,alert
+ha-06,tsarin taron shirye-shiryen kudi na shekara,normal
+bn-05,অননুমোদিত অনুপ্রবেশ এবং সুরক্ষা লঙ্ঘনের সতর্কতা,alert
+bn-06,ত্রৈমাসিক আর্থিক পরিকল্পনা সভার আলোচ্যসূচি,normal

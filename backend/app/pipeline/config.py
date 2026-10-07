@@ -28,7 +28,10 @@ class TaskConfig:
     id_column: str | None = None
     sample_submission: Path | None = None
     positive_label: str | None = None
-
+    language_normalize: str | None = None
+    strip_zero_width: bool = False
+    clean_text: bool = False
+    subword_ngrams: bool = False
     def record(self) -> dict:
         values = asdict(self)
         for key in ("train_csv", "predict_csv", "sample_submission"):
@@ -53,6 +56,12 @@ def config_from_dict(values: object, base: Path) -> TaskConfig:
         value = values.get(key)
         if value is not None and (not isinstance(value, str) or not value.strip()):
             raise ValueError(f"{key} must be a nonblank string or null")
+    lang_norm = values.get("language_normalize")
+    if lang_norm is not None and lang_norm not in ("NFKC", "NFC", "NFD", "NFKD"):
+        raise ValueError("language_normalize must be one of NFKC, NFC, NFD, NFKD or null")
+    for bool_field in ("strip_zero_width", "clean_text", "subword_ngrams"):
+        if bool_field in values and type(values[bool_field]) is not bool:
+            raise ValueError(f"{bool_field} must be a boolean")
     features = values.get("feature_columns", [])
     if not isinstance(features, (list, tuple)) or any(not isinstance(c, str) or not c.strip() for c in features):
         raise ValueError("feature_columns must be a list of numeric column names")
