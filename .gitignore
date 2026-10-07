@@ -36,6 +36,7 @@ frontend/.vite/
 
 # Python package metadata
 *.egg-info/
+build/
 
 # Editors and operating systems
 .vscode/

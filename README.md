@@ -6,12 +6,15 @@ Educational AI security demo: a calibrated English prompt-injection detector plu
 
 - Binary `benign` / `jailbreak` classification with a calibrated probability and metadata-driven risk bands.
 - Separate deterministic heuristic pattern matches; these are context, never model attribution.
-- Model provenance, held-out validation/test metrics, 256-token truncation reporting, and a safe three-case red-team workflow.
+- Model provenance, held-out validation/test metrics, 256-token truncation reporting, and a safe five-case red-team workflow.
+- A configuration-driven baseline pipeline for tabular/text classification and regression, plus multilingual, security, robustness, experiment, and GenAI reliability utilities.
 - FastAPI backend and React/Vite/Tailwind frontend.
 
 ## Repository layout
 
 - `backend/` — dataset preparation, transformer training, inference, API, and tests.
+- `backend/app/pipeline/` — reusable challenge pipeline modules.
+- `backend/configs/` and `backend/scripts/pipeline_*.py` — example challenge configurations and pipeline CLIs.
 - `frontend/` — React/Vite/Tailwind UI.
 - `backend/data/prompts.csv` — retained 24-row local challenge set; never merged into V2 training.
 - `backend/data/v2_manifest.json` — immutable external corpus revision and source hashes.
@@ -105,6 +108,10 @@ Open `http://localhost:5173`. The frontend uses the backend at `http://127.0.0.1
 - `GET /api/multilingual/model-info` — multilingual model provenance and per-language metrics.
 - `POST /api/analyze-multilingual` — multilingual analysis supporting `multilingual`, `translation`, and `compare` modes.
 - `GET /api/redteam/cases` and `POST /api/redteam/run` — fixed educational harness.
+- `GET /api/pipeline/capabilities` — supported tasks, languages, security checks, robustness transforms, and ensemble methods.
+- `POST /api/pipeline/analyze` — prompt security and language analysis.
+- `GET /api/pipeline/runs` — indexed experiment artifacts from `backend/outputs/`.
+- `POST /api/pipeline/robustness-check` — deterministic prompt perturbations for interactive inspection.
 
 ## Verification
 
