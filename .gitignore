@@ -19,11 +19,16 @@ htmlcov/
 backend/models/*
 !backend/models/.gitkeep
 
+# Generated V2 dataset splits
+# Generated V2 and multilingual dataset splits
+backend/data/v2/*.jsonl
+backend/data/multilingual/*.jsonl
 # Node
 node_modules/
 dist/
 frontend/.vite/
 .npm/
+/package-lock.json
 
 # Python package metadata
 *.egg-info/
@@ -33,3 +38,4 @@ frontend/.vite/
 .idea/
 .DS_Store
 Thumbs.db
+

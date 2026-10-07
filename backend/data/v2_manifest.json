@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "dataset_id": "dfuc1302/demo_hackathon",
+  "dataset_revision": "d17a4cf856bacd17d799e8a5f2955b0082f75e75",
+  "model_id": "microsoft/deberta-v3-small",
+  "model_revision": "a36c739020e01763fe789b4b85e2df55d6180012",
+  "license": "mit",
+  "language": "en",
+  "columns": [
+    "text",
+    "label"
+  ],
+  "splits": {
+    "train": {
+      "source_file": "data/train.csv",
+      "source_sha256": "d526d21a320bd7b0c51d06ea2405b591495e4aa1e7c7c032f18f3895fb6e5fe4",
+      "prepared_sha256": "d1b4c4d41cf3bf5c1cc7b326549c27d59fa5e40351e8ab29e9d5c53055e1d55a",
+      "rows": 4000,
+      "class_counts": {
+        "0": 2000,
+        "1": 2000
+      }
+    },
+    "validation": {
+      "source_file": "data/validation.csv",
+      "source_sha256": "a130ea879c3f836b3087a70dfa0afcdf5ad32c026866ead655d9b545a291c117",
+      "prepared_sha256": "fb2e01ef0421d672aae6d81a6d8bee44266ac68a32ac9123267b67360231088e",
+      "rows": 1000,
+      "class_counts": {
+        "0": 500,
+        "1": 500
+      }
+    },
+    "test": {
+      "source_file": "data/test.csv",
+      "source_sha256": "8c82a47760f48f2460d3478d47523c43ff639632ab8ab358d2aacf5bac47b44c",
+      "prepared_sha256": "a4c8d01a3d4d7e9c4b31c821b6d974652affa4df2eee213594262e7681a3f9b7",
+      "rows": 1000,
+      "class_counts": {
+        "0": 500,
+        "1": 500
+      }
+    }
+  }
+}
