@@ -46,7 +46,15 @@ This runbook defines the operational protocol for the RMIT Hackathon 2026. Follo
      --output-dir backend/outputs/baseline_v1
    ```
 2. **Verify Baseline Metrics**:
-   - Inspect output JSON for validation score and `artifact.json` integrity.
+   - Inspect the training output for the configured validation score.
+   - Verify the consolidated artifact with the same loader used by evaluation and prediction:
+   ```bash
+   PYTHONPATH=backend python -c "from app.pipeline.core import load_artifact; artifact, _ = load_artifact('backend/outputs/baseline_v1'); print(artifact['run']['run_id'])"
+   ```
+   - The pipeline writes one validated, non-pickle `artifact.json`. It does not write
+     `model.joblib`, `config.json`, or `metadata.json`. Their logical contents map to
+     `artifact.json["model"]`, `artifact.json["config"]`, and
+     `artifact.json["run"]` respectively. Do not create compatibility placeholders.
 3. **Generate First Valid Submission**:
    ```bash
    python backend/scripts/pipeline_predict.py \

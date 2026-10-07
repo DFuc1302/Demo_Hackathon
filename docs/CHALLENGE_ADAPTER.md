@@ -131,3 +131,26 @@ python backend/scripts/pipeline_predict.py \
   --output backend/submissions/submission_v1.csv \
   --sample-submission /path/to/official_sample_submission.csv
 ```
+
+## Baseline Artifact Contract
+
+`pipeline_train.py` publishes exactly one model artifact:
+`<output-dir>/artifact.json`. The pipeline intentionally does not use Python pickle or
+joblib persistence.
+
+| Legacy artifact expectation | Secure pipeline location |
+|---|---|
+| `model.joblib` | `artifact.json["model"]` and `artifact.json["preprocessing"]` |
+| `config.json` | `artifact.json["config"]` |
+| `metadata.json` | `artifact.json["run"]` |
+
+Loading an artifact through `app.pipeline.core.load_artifact` validates its schema,
+model/config hashes, split indices, and model dimensions before returning it. Use that
+loader for integrity checks rather than parsing JSON directly:
+
+```bash
+PYTHONPATH=backend python -c "from app.pipeline.core import load_artifact; artifact, _ = load_artifact('backend/outputs/baseline_v1'); print(artifact['run']['run_id'])"
+```
+
+Do not create empty or duplicated `model.joblib`, `config.json`, or `metadata.json`
+files to satisfy external filename checklists. Update the checklist to this contract.
